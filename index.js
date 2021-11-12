@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
+const ObjectId = require('mongodb').ObjectId;
 
 // create express app
 const app = express();
@@ -29,7 +30,7 @@ async function run() {
 
     // create collection
     const productsCollection = database.collection('products');
-    // const reviewsCollection = database.collection('reviews');
+    const reviewsCollection = database.collection('reviews');
     // const ordersCollection = database.collection('orders');
     const usersCollection = database.collection('users');
 
@@ -81,24 +82,35 @@ async function run() {
     // make admin
     app.put('/users/admin', async (req, res) => {
       const user = req.body;
-      // const requester = user.email;
-      // if (requester) {
-      //   const requesterAccount = await usersCollection.findOne({ email: requester });
-      //   if (requesterAccount.role === 'admin') {
-      //     const filter = { email: user.email };
-      //     const updateDoc = { $set: { role: 'admin' } };
-      //     const result = await usersCollection.updateOne(filter, updateDoc);
-      //     res.json(result);
-      //   }
-      // }
-      // else {
-      //   res.status(403).json({ message: 'you do not have access to make admin' });
-      // }
       const filter = { email: user.email };
       const updateDoc = { $set: { role: 'admin' } };
       const result = await usersCollection.updateOne(filter, updateDoc);
+      console.log(result);
       res.json(result);
 
+    });
+
+    // add review
+    app.post('/addReview', async (req, res) => {
+      const review = req.body;
+      const result = await reviewsCollection.insertOne(review);
+      res.json(result);
+    });
+
+    // get reviews
+    app.get('/reviews', async (req, res) => {
+      const cursor = reviewsCollection.find({});
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    // delete product
+    app.delete('/products/:id', async (req, res) => {
+      const id = req.params.id;
+      // console.log(id);
+      const query = { _id: ObjectId(id) };
+      const result = await productsCollection.deleteOne(query);
+      res.json(result);
     })
   }
   finally {
