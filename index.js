@@ -33,6 +33,7 @@ async function run() {
     const reviewsCollection = database.collection('reviews');
     const ordersCollection = database.collection('orders');
     const usersCollection = database.collection('users');
+    const blogsCollection = database.collection('blogs');
 
     // add product api
     app.post('/addProducts', async (req, res) => {
@@ -173,7 +174,14 @@ async function run() {
       const query = { _id: ObjectId(id) };
       const result = await ordersCollection.deleteOne(query);
       res.json();
-    })
+    });
+
+    // get blogs
+    app.get('/blogs', async (req, res) => {
+      const cursor = blogsCollection.find({});
+      const result = await cursor.toArray();
+      res.send(result);
+    });
   }
   finally {
     // await client.close();
