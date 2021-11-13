@@ -129,7 +129,32 @@ async function run() {
       res.json(result);
     });
 
-    // get orders
+    // get all orders
+    app.get('/allOrders', async (req, res) => {
+      const cursor = ordersCollection.find({});
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    // update single order
+    app.put('/order/:id', async (req, res) => {
+      const id = req.params.id;
+      const options = { upsert: true };
+      const filter = { _id: ObjectId(id) };
+      const order = req.body;
+
+      const updateDoc = {
+        $set: {
+          status: order.status,
+        },
+      };
+
+      const result = await ordersCollection.updateOne(filter, updateDoc, options);
+      console.log(result);
+      res.json(result);
+    })
+
+    // get orders by email
     app.get('/orders', async (req, res) => {
       let query = {};
       const email = req.query.email;
@@ -139,6 +164,15 @@ async function run() {
       const cursor = ordersCollection.find(query);
       const orders = await cursor.toArray();
       res.json(orders);
+    });
+
+    // delete orders
+    app.delete('/orders/:id', async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: ObjectId(id) };
+      const result = await ordersCollection.deleteOne(query);
+      res.json();
     })
   }
   finally {
