@@ -31,7 +31,7 @@ async function run() {
     // create collection
     const productsCollection = database.collection('products');
     const reviewsCollection = database.collection('reviews');
-    // const ordersCollection = database.collection('orders');
+    const ordersCollection = database.collection('orders');
     const usersCollection = database.collection('users');
 
     // add product api
@@ -47,6 +47,15 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    // get single product
+    app.get('/product/:id', async (req, res) => {
+      const id = req.params.id;
+      // console.log(id);
+      const query = { _id: ObjectId(id) };
+      const result = await productsCollection.findOne(query);
+      res.send(result);
+    })
 
     // add user
     app.post('/users', async (req, res) => {
@@ -111,6 +120,25 @@ async function run() {
       const query = { _id: ObjectId(id) };
       const result = await productsCollection.deleteOne(query);
       res.json(result);
+    });
+
+    // post orders
+    app.post('/orders', async (req, res) => {
+      const order = req.body;
+      const result = await ordersCollection.insertOne(order);
+      res.json(result);
+    });
+
+    // get orders
+    app.get('/orders', async (req, res) => {
+      let query = {};
+      const email = req.query.email;
+      if (email) {
+        query = { email: email };
+      }
+      const cursor = ordersCollection.find(query);
+      const orders = await cursor.toArray();
+      res.json(orders);
     })
   }
   finally {
